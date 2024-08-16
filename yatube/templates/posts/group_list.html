@@ -6,10 +6,16 @@
         {{ group.description }}
     </p>
     <article>
-        {% for post in posts %}
+        {% for post in page_obj %}
         <ul>
             <li>
+              {% if post.author.get_full_name %}
                 Автор: {{ post.author.get_full_name }}
+              {% else %}
+                Автор: {{ post.author.username }}
+              {% endif %}
+                <br>
+                <a href="{% url 'posts:profile' post.author.username  %}">все посты пользователя</a>
             </li>
             <li>
                 Дата публикации: {{ post.pub_date|date:"d E Y" }}

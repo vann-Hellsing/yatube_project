@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
+from .validators import validate_not_empty
+
 # создание таблицы юзеров из шаблона Django.
 User = get_user_model()
 
@@ -16,7 +18,7 @@ class Group(models.Model):
 
 
 class Post(models.Model):
-    text = models.TextField()
+    text = models.TextField(validators=[validate_not_empty])
     pub_date = models.DateTimeField(auto_now_add=True)
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
     group = models.ForeignKey(Group, blank=True, null=True, on_delete=models.CASCADE, related_name='posts')

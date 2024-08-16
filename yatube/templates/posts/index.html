@@ -1,25 +1,34 @@
 {% extends 'base.html' %}
 {% block title %}
-  <h1 class="container py-5">{{ title }}</h1>
+  Главная
 {% endblock %}
 {% block content %}
-<!-- класс py-5 создает отступы сверху и снизу блока -->
-<div class="container py-5">
-    {% for post in posts %}
-    <ul>
-        <li>
+  {% for post in page_obj %}
+  <!-- класс py-5 создает отступы сверху и снизу блока -->
+    <div class="container py-5">
+
+        <ul>
+          <li>
+            {% if post.author.get_full_name %}
             Автор: {{ post.author.get_full_name }}
-        </li>
-        <li>
+            {% else %}
+            Автор: {{ post.author.username }}
+            {% endif %}
+            <br>
+            <a href="{% url 'posts:profile' post.author.username  %}">все посты пользователя</a>
+          </li>
+          <li>
             Дата публикации: {{ post.pub_date|date:"d E Y" }}
-        </li>
-    </ul>
-    <p>{{ post.text }}</p>
-    {% if post.group %}
-    <a href="{% url 'posts:group' post.group.slug %}">все записи группы</a>
-    {% endif %}
-    {% if not forloop.last %}
-    <hr>{% endif %}
-    {% endfor %}
-</div>
+          </li>
+        </ul>
+        <p>{{ post.text }}</p>
+        {% if post.group %}
+          <a href="{% url 'posts:group' post.group.slug %}">все записи группы</a>
+        {% endif %}
+        {% if not forloop.last %}
+          <hr>{% endif %}
+
+    </div>
+  {% endfor %}
+
 {% endblock %}

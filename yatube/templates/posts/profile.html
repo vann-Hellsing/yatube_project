@@ -1,0 +1,40 @@
+<!-- templates/posts/profile.html -->
+
+{% extends 'base.html' %}
+{% block title%}{{ title }}{% endblock %}
+{% block content %}
+{% load user_filters %}
+<div class="container py-5">
+  <h1>Все посты пользователя {{ title }}</h1>
+  <h3> Всего постов: {{ quantity_posts }}</h3>
+  <hr>
+  <article>
+    {% for post in page_obj %}
+    <ul>
+      <li>
+        {% if post.author.get_full_name %}
+            Автор: {{ post.author.get_full_name }}
+        {% else %}
+            Автор: {{ post.author.username }}
+        {% endif %}
+        <br>
+        <a href="{% url 'posts:profile' user.username  %}">все посты пользователя</a>
+      </li>
+      <li>
+        Дата публикации: {{ post.pub_date|date:"d E Y" }}
+      </li>
+    </ul>
+    <p>
+      {{ post.text }}
+    </p>
+    <a href="{% url 'posts:post_detail' post.id  %}">подробная информация </a>
+    <br>
+    {% if post.group %}
+      <a href="{% url 'posts:group' post.group.slug %}">все записи группы</a>
+    {% endif %}
+    {% if not forloop.last %}
+      <hr>{% endif %}
+    {% endfor %}
+  </article>
+</div>
+{% endblock %}
