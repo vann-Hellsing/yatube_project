@@ -1,5 +1,6 @@
 import datetime
 
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
@@ -37,7 +38,7 @@ def authorized_only(func):
     def check_user(request, *args, **kwargs):
         if request.user.is_authenticated:
             return func(request, *args, **kwargs)
-        return redirect('/auth/login')
+        return redirect('/auth/login/')
     return check_user
 
 
@@ -60,7 +61,7 @@ def index(request):
     return render(request, 'posts/index.html', context)
 
 
-@authorized_only
+# @authorized_only
 def group_posts(request, slug):
     # template = 'posts/group_list.html'
     # desc = 'Здесь будет информация о группах проекта Yatube'
@@ -84,7 +85,7 @@ def group_posts(request, slug):
     return render(request, 'posts/group_list.html', context)
 
 
-@authorized_only
+# @authorized_only
 def profile(request, username):
     user = get_object_or_404(User, username=username)
     posts = Post.objects.filter(author_id=user.id).order_by('-pub_date')
@@ -103,7 +104,7 @@ def profile(request, username):
     return render(request, 'posts/profile.html', context)
 
 
-@authorized_only
+# @authorized_only
 def post_detail(request, post_id):
 
     post = get_object_or_404(Post, pk=post_id)
@@ -117,7 +118,8 @@ def post_detail(request, post_id):
     return render(request, 'posts/post_detail.html', context)
 
 
-@authorized_only
+# @authorized_only
+@login_required(login_url='users:login')
 def post_create(request):
 
     if request.method == 'POST':
@@ -145,6 +147,7 @@ def post_create(request):
     return render(request, 'posts/create_post.html', {'form': form})
 
 
+@login_required(login_url='users:login')
 def post_edit(request, post_id):
     """Функция редактирования поста"""
 

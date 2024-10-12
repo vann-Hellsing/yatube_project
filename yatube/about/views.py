@@ -8,7 +8,7 @@ class AboutAuthorView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Действия для контекста
-        context['just_title'] = 'Очень простоя страница'
+        context['just_title'] = 'Очень простая страница'
         context['just_text'] = 'На создание страницы у меня ушло пять минут! Ай да я.'
         return context
 
@@ -19,6 +19,6 @@ class AboutTechView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         # Действия для контекста
-        context['just_title'] = 'Очень простоя страница'
+        context['just_title'] = 'Очень простая страница'
         context['just_text'] = 'На создание страницы у меня ушло пять минут! Ай да я.'
         return context

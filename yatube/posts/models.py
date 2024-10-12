@@ -7,7 +7,7 @@ from .validators import validate_not_empty
 User = get_user_model()
 
 
-# Создание экземляра постов
+# Создание экземпляра постов
 class Group(models.Model):
     title = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, unique=True, db_index=True)
@@ -18,10 +18,23 @@ class Group(models.Model):
 
 
 class Post(models.Model):
-    text = models.TextField(validators=[validate_not_empty])
-    pub_date = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='posts')
-    group = models.ForeignKey(Group, blank=True, null=True, on_delete=models.CASCADE, related_name='posts')
+    text = models.TextField(validators=[validate_not_empty],
+                            verbose_name='Текст поста',
+                            help_text='Введите текст поста')
+
+    pub_date = models.DateTimeField(auto_now_add=True,
+                                    verbose_name='Дата публикации',)
+    author = models.ForeignKey(User,
+                               on_delete=models.CASCADE,
+                               verbose_name='Автор',
+                               related_name='posts')
+    group = models.ForeignKey(Group,
+                              blank=True,
+                              null=True,
+                              on_delete=models.CASCADE,
+                              related_name='posts',
+                              verbose_name='Группа',
+                              help_text='Выберите группу')
 
     def __str__(self):
         return self.text
