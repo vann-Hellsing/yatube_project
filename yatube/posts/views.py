@@ -5,11 +5,12 @@ from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
+from django.views.decorators.cache import cache_page
 
-from .forms import PostForm
+from .forms import PostForm, CommentForm
 # from django.contrib.auth.decorators import login_required
 
-from .models import Post, Group, User
+from .models import Post, Group, User, Comment
 
 
 # def index(request):
@@ -43,7 +44,9 @@ def authorized_only(func):
 
 
 # @login_required
+@cache_page(20)
 def index(request):
+    title = 'Последние обновления на сайте'
     # Создаем список постов
     post_list = Post.objects.all().order_by('-pub_date')
     # Создаем пагинатор для отображения 10 страниц
@@ -55,7 +58,7 @@ def index(request):
     # Отдаем в словаре контекста
     context = {
         'page_obj': page_obj,
-
+        'title': title,
 
     }
     return render(request, 'posts/index.html', context)
@@ -108,12 +111,16 @@ def profile(request, username):
 def post_detail(request, post_id):
 
     post = get_object_or_404(Post, pk=post_id)
+    comments = post.comments.all()
+    form_comment = CommentForm()
     title = post.text[:30]
     quantity_posts = post.author.posts.count()
     context = {
         'title': title,
         'post': post,
         'quantity_posts': quantity_posts,
+        'comments': comments,
+        'form': form_comment,
     }
     return render(request, 'posts/post_detail.html', context)
 
@@ -125,7 +132,8 @@ def post_create(request):
     if request.method == 'POST':
         # Создаем объект формы PostForm
         # И передаем в него полученные данные
-        form = PostForm(request.POST or None)
+        form = PostForm(request.POST or None,
+                        files=request.FILES or None,)
 
         # Если данные валидны - работаем с "очищенными" данными
         if form.is_valid():
@@ -159,7 +167,7 @@ def post_edit(request, post_id):
 
     if request.method == 'POST':
 
-        form = PostForm(request.POST or None, instance=post)
+        form = PostForm(request.POST or None, files=request.FILES or None, instance=post)
 
         # Если данные валидны - работаем с "очищенными" данными
         if form.is_valid():
@@ -181,7 +189,19 @@ def post_edit(request, post_id):
 
         # Если пришел не пост запрос - передаем пустую форму
     form = PostForm(instance=post)
-    context = {'form': form,
+    context = {'post': post, 'form': form,
                'is_edit': True}
     return render(request, 'posts/create_post.html', context)
 
+
+@login_required
+def add_comment(request, post_id):
+    """Функция добавления комментария"""
+    form = CommentForm(request.POST or None)
+    post = get_object_or_404(Post, pk=post_id)
+    if form.is_valid():
+        comment = form.save(commit=False)
+        comment.author = request.user
+        comment.post = post
+        comment.save()
+    return redirect('posts:post_detail', post_id=post.pk)

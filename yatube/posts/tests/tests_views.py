@@ -4,7 +4,8 @@ from django.test import TestCase, Client
 from django.urls import reverse
 from django import forms
 
-from ..models import Group, Post
+
+from ..models import Group, Post, Comment
 
 User = get_user_model()
 
@@ -24,6 +25,11 @@ class PostPagesTests(TestCase):
             text='Тестовая запись!',
             author=cls.author,
             group=cls.group
+        )
+        cls.comment = Comment.objects.create(
+            text='test',
+            author=cls.author,
+            post=cls.post
         )
 
         cls.templates_page_names = {
@@ -72,7 +78,9 @@ class PostPagesTests(TestCase):
             # При создании формы поля модели типа TextField
             # преобразуются в CharField с виджетом forms.Textarea
             # 'author': forms.fields.ChoiceField,
-            'group': forms.fields.ChoiceField
+            'group': forms.fields.ChoiceField,
+            'image': forms.fields.ImageField
+
         }
         # Проверяем, что типы полей формы в словаре context соответствуют ожидаемым
         for value, expected in form_fields.items():
@@ -98,6 +106,12 @@ class PostPagesTests(TestCase):
         self.posts_check_all_fields(response.context['page_obj'][0])
         last_post = response.context['page_obj'][0]
         self.assertEqual(last_post, self.post)
+
+    def test_posts_comment_show(self):
+        """Проверка появляется ли коммент на странице поста"""
+        response = self.authorised_client.get(reverse('posts:post_detail', kwargs={'post_id': self.post.id}))
+        last_comment = response.context['comments'][0]
+        self.assertEqual(last_comment, self.comment)
 
 
 class PostsPaginatorTests(TestCase):

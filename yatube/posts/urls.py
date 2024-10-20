@@ -30,5 +30,10 @@ urlpatterns = [
         'create/',
         views.post_create,
         name='post_create'
+    ),
+    path(
+        'posts/<int:post_id>/comment/',
+        views.add_comment,
+        name='add_comment'
     )
 ]
