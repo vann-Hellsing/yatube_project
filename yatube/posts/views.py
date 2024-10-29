@@ -5,12 +5,13 @@ from django.db.models import Count
 from django.http import HttpResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
+from django.urls import reverse
 from django.views.decorators.cache import cache_page
 
 from .forms import PostForm, CommentForm
 # from django.contrib.auth.decorators import login_required
 
-from .models import Post, Group, User, Comment
+from .models import Post, Group, User, Comment, Follow
 
 
 # def index(request):
@@ -49,6 +50,7 @@ def index(request):
     title = 'Последние обновления на сайте'
     # Создаем список постов
     post_list = Post.objects.all().order_by('-pub_date')
+    # post_list = Post.objects.all()
     # Создаем пагинатор для отображения 10 страниц
     paginator = Paginator(post_list, 10)
     # Из URL извлекаем номер страницы - это значение параметра page
@@ -59,7 +61,6 @@ def index(request):
     context = {
         'page_obj': page_obj,
         'title': title,
-
     }
     return render(request, 'posts/index.html', context)
 
@@ -88,22 +89,34 @@ def group_posts(request, slug):
     return render(request, 'posts/group_list.html', context)
 
 
-# @authorized_only
+@authorized_only
 def profile(request, username):
-    user = get_object_or_404(User, username=username)
-    posts = Post.objects.filter(author_id=user.id).order_by('-pub_date')
+    author = get_object_or_404(User, username=username)
+    posts = Post.objects.filter(author_id=author.id).order_by('-pub_date')
     paginator = Paginator(posts, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    title = user.get_full_name
-    quantity_posts = user.posts.count()
+    title = author.get_full_name
+    quantity_posts = author.posts.count()
+    followers = Follow.objects.filter(author__username=username).count()
 
     context = {
         'title': title,
         'page_obj': page_obj,
-        'user': user,
-        'quantity_posts': quantity_posts
+        'author': author,
+        'quantity_posts': quantity_posts,
+        'followers': followers,
+        'following': False,
     }
+    if request.user.is_authenticated:
+        following = Follow.objects.filter(
+            author=author,
+            user=request.user,
+        ).exists()
+        context.update({
+            'following': following,
+            'user': request.user,
+        })
     return render(request, 'posts/profile.html', context)
 
 
@@ -205,3 +218,53 @@ def add_comment(request, post_id):
         comment.post = post
         comment.save()
     return redirect('posts:post_detail', post_id=post.pk)
+
+
+@login_required
+def follow_index(request):
+    """Функция просмотра подписчиков"""
+    title = 'Подписки пользователей'
+    # Создаем список постов
+    post_list = Follow.objects.filter(author__following__user=request.user)
+    # Создаем пагинатор для отображения 10 страниц
+    paginator = Paginator(post_list, 10)
+    # Из URL извлекаем номер страницы - это значение параметра page
+    page_number = request.GET.get('page')
+    # Получаем набор записей для страницы
+    page_obj = paginator.get_page(page_number)
+    # Отдаем в словаре контекста
+    context = {
+        'page_obj': page_obj,
+        'title': title,
+
+    }
+    return render(request, 'posts/follow.html', context)
+
+
+@login_required
+def profile_follow(request, username):
+    """Функция подписки на автора"""
+    user = request.user
+    author = get_object_or_404(User, username=username)
+    if user != author:
+        Follow.objects.get_or_create(
+            user=user,
+            author=author,
+        )
+
+    return redirect('posts:profile', username)
+
+
+@login_required
+def profile_unfollow(request, username):
+    """Функция отписки от автора"""
+    author = get_object_or_404(User, username=username)
+
+    unfollow = Follow.objects.filter(
+        user=request.user,
+        author=author
+    )
+    if unfollow.exists():
+        unfollow.delete()
+
+    return redirect('posts:profile', username)

@@ -1,13 +1,12 @@
 {% extends 'base.html' %}
 {% load cache %}
 {% load thumbnail %}
-{% block title %}{{ title }}{% endblock %}
+{% block title %}Подписки пользователей{% endblock %}
 {% block content %}
   {% include 'includes/switcher.html' %}
-  {% cache 20 index_page %}
   {% for post in page_obj %}
   <!-- класс py-5 создает отступы сверху и снизу блока -->
-    <div class="container py-3">
+    <div class="container py-5">
         <ul>
           <li>
             {% if post.author.get_full_name %}
@@ -32,5 +31,4 @@
           <hr>{% endif %}
     </div>
   {% endfor %}
-  {% endcache %}
 {% endblock %}

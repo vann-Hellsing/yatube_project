@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import TestCase, Client
 from django.urls import reverse
 
@@ -22,6 +23,7 @@ class PostURLTests(TestCase):
         cls.post = Post.objects.create(
             text='Тестовая запись!',
             author=cls.author,
+            group=cls.group,
         )
         cls.templates_url_names_public = {
             'posts/index.html': reverse('posts:index'),
@@ -29,10 +31,10 @@ class PostURLTests(TestCase):
                 'posts:group',
                 kwargs={'slug': cls.group.slug}
             ),
-            'posts/profile.html': reverse(
-                'posts:profile',
-                kwargs={'username': cls.author.username}
-            ),
+            # 'posts/profile.html': reverse(
+            #     'posts:profile',
+            #     kwargs={'username': cls.author.username}
+            # ),
             'posts/post_detail.html': reverse(
                 'posts:post_detail',
                 kwargs={'post_id': cls.post.id}
@@ -41,6 +43,10 @@ class PostURLTests(TestCase):
         cls.templates_url_names_private = {
             'posts/create_post.html': reverse('posts:post_create'),
             'posts/create_detail.html': reverse('posts:post_edit', kwargs={'post_id': cls.post.id}),
+            'posts/profile.html': reverse(
+                'posts:profile',
+                kwargs={'username': cls.author.username}
+            ),
         }
         cls.templates_url_names = {
             'posts/index.html': reverse('posts:index'),
@@ -61,6 +67,7 @@ class PostURLTests(TestCase):
         cls.url_unexisting_page = '/unexisting_page/'
 
     def setUp(self):
+        cache.clear()
         # Создадим неавторизованный клиент
         self.guest_client = Client()
 
