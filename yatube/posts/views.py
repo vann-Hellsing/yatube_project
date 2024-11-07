@@ -1,17 +1,18 @@
-import datetime
-
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count
-from django.http import HttpResponse
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.paginator import Paginator
-from django.urls import reverse
 from django.views.decorators.cache import cache_page
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
+# from . import serializer
 from .forms import PostForm, CommentForm
 # from django.contrib.auth.decorators import login_required
 
-from .models import Post, Group, User, Comment, Follow
+from .models import Post, Group, User, Follow
+from api.serializer import PostSerializer
 
 
 # def index(request):
@@ -268,3 +269,6 @@ def profile_unfollow(request, username):
         unfollow.delete()
 
     return redirect('posts:profile', username)
+
+
+

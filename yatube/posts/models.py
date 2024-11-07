@@ -8,6 +8,13 @@ from .validators import validate_not_empty
 User = get_user_model()
 
 
+class Tag(models.Model):
+    name = models.CharField(max_length=64)
+
+    def __str__(self):
+        return self.name
+
+
 # Создание экземпляра постов
 class Group(models.Model):
     title = models.CharField(max_length=100)
@@ -41,7 +48,9 @@ class Post(models.Model):
         'картинка',
         upload_to='posts/',
         blank=True,
+        null=True,
     )
+    tag = models.ManyToManyField(Tag, through='TagPost')
 
     class Meta:
         ordering = ('-pub_data',),
@@ -50,6 +59,14 @@ class Post(models.Model):
 
     def __str__(self):
         return self.text
+
+
+class TagPost(models.Model):
+    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f'{self.tag} {self.post}'
 
 
 class Comment(models.Model):
@@ -104,5 +121,3 @@ class Follow(models.Model):
 
     def __str__(self) -> str:
         return f'{self.user.username} подписан на {self.author.username}'
-
-

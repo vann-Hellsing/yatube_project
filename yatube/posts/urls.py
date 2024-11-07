@@ -1,7 +1,11 @@
-from django.urls import path
+from django.urls import path, include
+# from rest_framework.authtoken.views import obtain_auth_token
+# from rest_framework.routers import SimpleRouter
 
 from . import views
 
+# router = SimpleRouter()
+# router.register('posts', views.PostViewSet)
 
 app_name = 'posts'
 
@@ -51,4 +55,29 @@ urlpatterns = [
         views.profile_unfollow,
         name='profile_unfollow'
     ),
+    # path(
+    #     'api/v1/', include(router.urls)
+    # ),
+    # path(
+    #     'api/v1/api-token-auth/',
+    #     obtain_auth_token,
+    # ),
+    # path(
+    #     'api/v1/posts/<int:pk>/',
+    #     views.api_post_detail,
+    #     name='api_post_detail'
+    # ),
+    # path(
+    #     'api/v1/posts/',
+    #     views.api_posts,
+    #     name='api_posts'
+    # )
+    # path(
+    #     'api/v1/posts/',
+    #     views.APIPostList.as_view()
+    # ),
+    # path(
+    #     'api/v1/posts/<int:pk>/',
+    #     views.APIPostDetail.as_view()
+    # ),
 ]
