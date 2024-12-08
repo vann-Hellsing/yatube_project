@@ -82,7 +82,10 @@ class Comment(models.Model):
         verbose_name='Автор',
         related_name='comments'
     )
-    text = models.TextField()
+    text = models.TextField(
+        verbose_name='Текст отзыва',
+        help_text='Введите текст отзыва'
+    )
     created = models.DateTimeField(
         auto_now_add=True,
         verbose_name='Дата публикации'
